@@ -1,0 +1,39 @@
+name: Publish Blazor WebAssembly to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # デプロイ対象のブランチを指定 (通常は main または master)
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'  # 使用する .NET のバージョン (プロジェクトに合わせて変更)
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-restore -o out
+
+      - name: Move files to docs
+        run: |
+          mkdir -p docs
+          mv out/* docs/
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs  # GitHub Pages にデプロイするフォルダ
+          branch: gh-pages  # デプロイ先のブランチ。GitHub Pages 設定で指定する必要があります。
+          clean: true  # デプロイ前に gh-pages ブランチをクリーンアップ
